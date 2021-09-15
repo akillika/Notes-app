@@ -9,7 +9,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   if (await FirebaseAuth.instance.currentUser != null) {
-    runApp(MyApp1());
+    var currentUser = FirebaseAuth.instance.currentUser;
+
+    runApp(MyApp1(currentUser!.uid.toString()));
   } else {
     runApp(MyApp());
   }
@@ -30,6 +32,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MyApp1 extends StatelessWidget {
+  MyApp1(this.uid);
+  final String uid;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,7 +42,9 @@ class MyApp1 extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: HomePage(),
+      home: HomePage(
+        userID: uid,
+      ),
     );
   }
 }

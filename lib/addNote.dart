@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:notes_app/homepage.dart';
 
 class AddNote extends StatefulWidget {
-  const AddNote({Key? key}) : super(key: key);
+  const AddNote({Key? key, required this.userID}) : super(key: key);
+
+  final String userID;
 
   @override
   _AddNoteState createState() => _AddNoteState();
@@ -17,8 +19,11 @@ class _AddNoteState extends State<AddNote> {
   CollectionReference users = FirebaseFirestore.instance.collection('users');
 
   Future<void> addUser(String title, String desc) {
+    print(widget.userID);
     // Call the user's CollectionReference to add a new user
     return users
+        .doc(widget.userID)
+        .collection(widget.userID)
         .add({
           'title': title,
           'description': desc,
@@ -81,7 +86,9 @@ class _AddNoteState extends State<AddNote> {
                   Navigator.pushAndRemoveUntil<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => HomePage(),
+                      builder: (BuildContext context) => HomePage(
+                        userID: widget.userID,
+                      ),
                     ),
                     (route) => false,
                   );

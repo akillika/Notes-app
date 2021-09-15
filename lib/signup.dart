@@ -75,8 +75,17 @@ class _SignUpPageState extends State<SignUpPage> {
                         password: passController.text)
                     .then((result) {
                   if (result == null) {
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (context) => HomePage()));
+                    var currentUser = FirebaseAuth.instance.currentUser;
+
+                    if (currentUser != null) {
+                      print(currentUser.uid);
+                    }
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HomePage(
+                                  userID: currentUser!.uid.toString(),
+                                )));
                   } else {
                     // ignore: deprecated_member_use
                     final snackBar = SnackBar(content: Text(result));

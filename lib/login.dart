@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:notes_app/auth.dart';
@@ -58,10 +59,17 @@ class _LoginPageState extends State<LoginPage> {
                         password: passController.text)
                     .then((result) {
                   if (result == null) {
+                    var currentUser = FirebaseAuth.instance.currentUser;
+
+                    if (currentUser != null) {
+                      print(currentUser.uid);
+                    }
                     Navigator.pushAndRemoveUntil<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => HomePage(),
+                        builder: (BuildContext context) => HomePage(
+                          userID: currentUser!.uid.toString(),
+                        ),
                       ),
                       (route) =>
                           false, //if you want to disable back feature set to false
