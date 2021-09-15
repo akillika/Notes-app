@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:notes_app/auth.dart';
 import 'package:notes_app/homepage.dart';
 import 'package:notes_app/signup.dart';
 
@@ -11,6 +12,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+  final passController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
               height: 40,
             ),
             TextField(
+              controller: emailController,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(), hintText: 'Email ID'),
             ),
@@ -39,6 +43,7 @@ class _LoginPageState extends State<LoginPage> {
               height: 20,
             ),
             TextField(
+              controller: passController,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(), hintText: 'Password'),
             ),
@@ -47,8 +52,26 @@ class _LoginPageState extends State<LoginPage> {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HomePage()));
+                AuthenticationHelper()
+                    .signIn(
+                        email: emailController.text,
+                        password: passController.text)
+                    .then((result) {
+                  if (result == null) {
+                    Navigator.pushAndRemoveUntil<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => HomePage(),
+                      ),
+                      (route) =>
+                          false, //if you want to disable back feature set to false
+                    );
+                  } else {
+                    // print(result);
+                    final snackBar = SnackBar(content: Text(result));
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  }
+                });
               },
               child: Container(
                 height: 50,
