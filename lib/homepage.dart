@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'dart:math';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:notes_app/addNote.dart';
 import 'package:notes_app/login.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,6 +12,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final Stream<QuerySnapshot> _usersStream =
+      FirebaseFirestore.instance.collection('users').snapshots();
   Future<void> _signOut() async {
     await FirebaseAuth.instance.signOut();
   }
@@ -44,40 +45,70 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(color: Colors.green),
         ),
       ),
-      body: Container(
-        child: StaggeredGridView.countBuilder(
-          crossAxisCount: 4,
-          itemCount: 8,
-          itemBuilder: (BuildContext context, int index) => new Container(
-              color: Colors.green,
-              child: new Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      new Text(
-                        'Hello world to the maximum',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 20),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      new Text('This is a test note'),
-                    ],
-                  ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _usersStream,
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Text('Something went wrong');
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Text("Loading");
+          }
+
+          return ListView(
+            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+              Map<String, dynamic> data =
+                  document.data()! as Map<String, dynamic>;
+              return ListTile(
+                title: Text(
+                  data['title'],
+                  overflow: TextOverflow.ellipsis,
                 ),
-              )),
-          staggeredTileBuilder: (int index) =>
-              new StaggeredTile.count(2, index.isEven ? 2 : 1),
-          mainAxisSpacing: 4.0,
-          crossAxisSpacing: 4.0,
-        ),
+                subtitle: Text(data['description']),
+              );
+            }).toList(),
+          );
+        },
       ),
+      // body: Container(
+      //   child: StaggeredGridView.countBuilder(
+      //     crossAxisCount: 4,
+      //     itemCount: 8,
+      //     itemBuilder: (BuildContext context, int index) => new Container(
+      //         color: Colors.green,
+      //         child: new Center(
+      //           child: Padding(
+      //             padding: const EdgeInsets.all(10.0),
+      //             child: Column(
+      //               crossAxisAlignment: CrossAxisAlignment.start,
+      //               children: [
+      //                 new Text(
+      //                   'Hello world to the maximum',
+      //                   style: TextStyle(
+      //                       fontWeight: FontWeight.bold, fontSize: 20),
+      //                 ),
+      //                 SizedBox(
+      //                   height: 10,
+      //                 ),
+      //                 new Text('This is a test note'),
+      //               ],
+      //             ),
+      //           ),
+      //         )),
+      //     staggeredTileBuilder: (int index) =>
+      //         new StaggeredTile.count(2, index.isEven ? 2 : 1),
+      //     mainAxisSpacing: 4.0,
+      //     crossAxisSpacing: 4.0,
+      //   ),
+      // ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () {},
+        onPressed: () {
+          // addUser("hello", "this is a description");
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => AddNote()));
+        },
       ),
     );
   }
