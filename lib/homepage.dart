@@ -79,11 +79,13 @@ class _HomePageState extends State<HomePage> {
                     document.data()! as Map<String, dynamic>;
                 return GestureDetector(
                   onTap: () {
-                    print(data['title']);
+                    print(document.id);
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => ExpandedNote(
+                                docID: document.id,
+                                userID: widget.userID,
                                 title: data['title'].toString(),
                                 desc: data['description'].toString())));
                   },
