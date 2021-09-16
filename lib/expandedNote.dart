@@ -8,13 +8,17 @@ class ExpandedNote extends StatefulWidget {
       required this.title,
       required this.desc,
       required this.userID,
-      required this.docID})
+      required this.docID,
+      required this.time,
+      required this.date})
       : super(key: key);
 
   final String title;
   final String desc;
   final String userID;
   final String docID;
+  final String time;
+  final String date;
 
   @override
   _ExpandedNoteState createState() => _ExpandedNoteState();
@@ -22,14 +26,48 @@ class ExpandedNote extends StatefulWidget {
 
 class _ExpandedNoteState extends State<ExpandedNote> {
   CollectionReference users = FirebaseFirestore.instance.collection('users');
-  // late String docID;
 
-  Future<void> updateUser(String title, String description, String docID) {
+  String? _selectedTime;
+  late DateTime dt;
+  late TimeOfDay _savedTime;
+
+  Future<void> _showTimePicker() async {
+    final TimeOfDay? result =
+        await showTimePicker(context: context, initialTime: _savedTime);
+    if (result != null) {
+      setState(() {
+        _savedTime = result;
+      });
+    }
+  }
+
+  _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: dt, // Refer step 1
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != dt)
+      setState(() {
+        dt = picked;
+      });
+  }
+
+  Future<void> updateUser(String title, String description, String docID,
+      String time, String date) {
     return users
         .doc(widget.userID)
         .collection(widget.userID)
         .doc(docID)
-        .update({'title': title, 'description': description})
+        .update(
+          {
+            'title': title,
+            'description': description,
+            'date': date,
+            'time': time
+          },
+        )
         .then((value) => print("Note Updated"))
         .catchError((error) => print("Failed to update note: $error"));
   }
@@ -51,6 +89,10 @@ class _ExpandedNoteState extends State<ExpandedNote> {
   void initState() {
     super.initState();
     // docID = widget.docID;
+    _savedTime = TimeOfDay(
+        hour: int.parse(widget.time.split(":")[0]),
+        minute: int.parse(widget.time.split(":")[1].split(" ")[0]));
+    dt = DateTime.parse(widget.date);
     titleController.text = widget.title;
     descController.text = widget.desc;
   }
@@ -72,7 +114,7 @@ class _ExpandedNoteState extends State<ExpandedNote> {
               Card(
                   color: Colors.white,
                   child: Padding(
-                    padding: EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(15.0),
                     child: TextField(
                       controller: titleController,
                       maxLines: 2,
@@ -85,7 +127,7 @@ class _ExpandedNoteState extends State<ExpandedNote> {
               Card(
                   color: Colors.white,
                   child: Padding(
-                    padding: EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(15.0),
                     child: TextField(
                       controller: descController,
                       maxLines: 20,
@@ -96,10 +138,54 @@ class _ExpandedNoteState extends State<ExpandedNote> {
               SizedBox(
                 height: 20,
               ),
+              Row(
+                children: [
+                  TextButton(
+                      onPressed: () {
+                        _selectDate(context);
+                      },
+                      child: Text(
+                        "Choose a date: ",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      )),
+                  Text(
+                    "${dt.toLocal()}".split(' ')[0],
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              // SizedBox(
+              //   height: 10,
+              // ),
+              Row(
+                children: [
+                  TextButton(
+                      onPressed: () {
+                        _showTimePicker();
+                      },
+                      child: Text(
+                        "Choose a time: ",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      )),
+                  Text(
+                    _savedTime.format(context),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 10,
+              ),
               GestureDetector(
                 onTap: () {
                   updateUser(
-                      titleController.text, descController.text, widget.docID);
+                      titleController.text,
+                      descController.text,
+                      widget.docID,
+                      _savedTime.format(context).toString(),
+                      dt.toString());
                   Navigator.pushAndRemoveUntil<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(

@@ -16,6 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // final String uid = widget.userID;
   late String uid;
+  late String formattedDate;
   late Stream<QuerySnapshot> _usersStream;
   Future<void> _signOut() async {
     await FirebaseAuth.instance.signOut();
@@ -70,15 +71,15 @@ class _HomePageState extends State<HomePage> {
               },
               child: Icon(
                 Icons.exit_to_app_outlined,
-                color: Colors.green,
+                color: Colors.white,
               ),
             ),
           )
         ],
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.green,
         title: Text(
-          "All notes",
-          style: TextStyle(color: Colors.green),
+          "All tasks",
+          style: TextStyle(color: Colors.white),
         ),
       ),
       body: Padding(
@@ -99,6 +100,7 @@ class _HomePageState extends State<HomePage> {
               children: snapshot.data!.docs.map((DocumentSnapshot document) {
                 Map<String, dynamic> data =
                     document.data()! as Map<String, dynamic>;
+                formattedDate = data['date'].substring(0, 10);
                 return GestureDetector(
                   onTap: () {
                     print(document.id);
@@ -106,6 +108,8 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => ExpandedNote(
+                                date: data['date'].toString(),
+                                time: data['time'].toString(),
                                 docID: document.id,
                                 userID: widget.userID,
                                 title: data['title'].toString(),
@@ -113,21 +117,46 @@ class _HomePageState extends State<HomePage> {
                   },
                   child: Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ListTile(
-                        title: Text(
-                          data['title'],
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
+                      padding: EdgeInsets.all(0.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListTile(
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  data['title'],
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      formattedDate,
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Text(
+                                      data['time'],
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            subtitle: Text(
+                              data['description'],
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          data['description'],
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        ],
                       ),
                     ),
                   ),
