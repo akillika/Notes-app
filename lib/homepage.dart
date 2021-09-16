@@ -32,8 +32,13 @@ class _HomePageState extends State<HomePage> {
     var generalNotificationDetails =
         new NotificationDetails(android: androidDetails, iOS: iOSDetails);
 
-    await fltrNotification.show(
-        0, 'Hi', "this is a notification", generalNotificationDetails);
+    // await fltrNotification.show(
+    //     0, 'Hi', "this is a notification", generalNotificationDetails);
+
+    var scheduledTime = DateTime.now().add(Duration(seconds: 5));
+
+    fltrNotification.schedule(1, "task", "scheduled notification",
+        scheduledTime, generalNotificationDetails);
   }
 
   @override
