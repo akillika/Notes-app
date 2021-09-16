@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:notes_app/addNote.dart';
 import 'package:notes_app/expandedNote.dart';
 import 'package:notes_app/login.dart';
@@ -18,13 +19,35 @@ class _HomePageState extends State<HomePage> {
   late String uid;
   late String formattedDate;
   late Stream<QuerySnapshot> _usersStream;
+  late FlutterLocalNotificationsPlugin fltrNotification;
   Future<void> _signOut() async {
     await FirebaseAuth.instance.signOut();
+  }
+
+  Future _showNotification() async {
+    var androidDetails = new AndroidNotificationDetails(
+        "Chanel ID", "Akil", "Hi I am Akil",
+        importance: Importance.max);
+    var iOSDetails = new IOSNotificationDetails();
+    var generalNotificationDetails =
+        new NotificationDetails(android: androidDetails, iOS: iOSDetails);
+
+    await fltrNotification.show(
+        0, 'Hi', "this is a notification", generalNotificationDetails);
   }
 
   @override
   void initState() {
     super.initState();
+    var androidInitilize =
+        new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var iOSinitilize = new IOSInitializationSettings();
+    final InitializationSettings initilizationsSettings =
+        InitializationSettings(android: androidInitilize, iOS: iOSinitilize);
+
+    fltrNotification = new FlutterLocalNotificationsPlugin();
+    fltrNotification.initialize(initilizationsSettings,
+        onSelectNotification: notificationSelected);
     _usersStream = FirebaseFirestore.instance
         .collection('users')
         .doc(widget.userID)
@@ -38,6 +61,10 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         // elevation: 0,
         actions: [
+          GestureDetector(
+            onTap: _showNotification,
+            child: Icon(Icons.notification_important),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
             child: GestureDetector(
@@ -166,6 +193,11 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
+      // floatingActionButton: FloatingActionButton(
+      //     onPressed: () {
+      //       _showNotification();
+      //     },
+      //     child: Icon(Icons.notification_add)),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
@@ -179,4 +211,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Future notificationSelected(String? payload) async {}
 }
