@@ -23,7 +23,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _usersStream = FirebaseFirestore.instance
         .collection('users')
@@ -42,9 +41,32 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
             child: GestureDetector(
               onTap: () {
-                _signOut();
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => LoginPage()));
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: Text("Logout"),
+                    content: Text("Do you really want to logout?"),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            ("Cancel"),
+                          )),
+                      TextButton(
+                          onPressed: () {
+                            _signOut();
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => LoginPage()));
+                          },
+                          child: Text("Logout",
+                              style: TextStyle(color: Colors.red))),
+                    ],
+                  ),
+                );
               },
               child: Icon(
                 Icons.exit_to_app_outlined,
@@ -70,7 +92,7 @@ class _HomePageState extends State<HomePage> {
             }
 
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Text("Loading");
+              return Center(child: CircularProgressIndicator());
             }
 
             return ListView(
@@ -90,19 +112,22 @@ class _HomePageState extends State<HomePage> {
                                 desc: data['description'].toString())));
                   },
                   child: Card(
-                    child: ListTile(
-                      title: Text(
-                        data['title'],
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        title: Text(
+                          data['title'],
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text(
-                        data['description'],
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
+                        subtitle: Text(
+                          data['description'],
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
                   ),
@@ -112,41 +137,9 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
-      // body: Container(
-      //   child: StaggeredGridView.countBuilder(
-      //     crossAxisCount: 4,
-      //     itemCount: 8,
-      //     itemBuilder: (BuildContext context, int index) => new Container(
-      //         color: Colors.green,
-      //         child: new Center(
-      //           child: Padding(
-      //             padding: const EdgeInsets.all(10.0),
-      //             child: Column(
-      //               crossAxisAlignment: CrossAxisAlignment.start,
-      //               children: [
-      //                 new Text(
-      //                   'Hello world to the maximum',
-      //                   style: TextStyle(
-      //                       fontWeight: FontWeight.bold, fontSize: 20),
-      //                 ),
-      //                 SizedBox(
-      //                   height: 10,
-      //                 ),
-      //                 new Text('This is a test note'),
-      //               ],
-      //             ),
-      //           ),
-      //         )),
-      //     staggeredTileBuilder: (int index) =>
-      //         new StaggeredTile.count(2, index.isEven ? 2 : 1),
-      //     mainAxisSpacing: 4.0,
-      //     crossAxisSpacing: 4.0,
-      //   ),
-      // ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          // addUser("hello", "this is a description");
           Navigator.push(
               context,
               MaterialPageRoute(

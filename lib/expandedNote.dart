@@ -34,6 +34,16 @@ class _ExpandedNoteState extends State<ExpandedNote> {
         .catchError((error) => print("Failed to update note: $error"));
   }
 
+  Future<void> deleteNote(String docID) {
+    return users
+        .doc(widget.userID)
+        .collection(widget.userID)
+        .doc(docID)
+        .delete()
+        .then((value) => print("Note Updated"))
+        .catchError((error) => print("Failed to update note: $error"));
+  }
+
   final titleController = TextEditingController();
   final descController = TextEditingController();
 
@@ -109,7 +119,41 @@ class _ExpandedNoteState extends State<ExpandedNote> {
                       borderRadius: BorderRadius.all(Radius.circular(100))),
                   child: Center(
                     child: Text(
-                      "Update",
+                      "Update note",
+                      style: TextStyle(
+                          color: Colors.white,
+                          // fontWeight: FontWeight.bold,
+                          fontSize: 20),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              GestureDetector(
+                onTap: () {
+                  deleteNote(widget.docID);
+                  Navigator.pushAndRemoveUntil<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => HomePage(
+                        userID: widget.userID,
+                      ),
+                    ),
+                    (route) =>
+                        false, //if you want to disable back feature set to false
+                  );
+                },
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                      color: Colors.red,
+                      // border: Border.all(),
+                      borderRadius: BorderRadius.all(Radius.circular(100))),
+                  child: Center(
+                    child: Text(
+                      "Delete note",
                       style: TextStyle(
                           color: Colors.white,
                           // fontWeight: FontWeight.bold,

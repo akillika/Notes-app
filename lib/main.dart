@@ -8,7 +8,7 @@ import 'login.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  if (await FirebaseAuth.instance.currentUser != null) {
+  if (FirebaseAuth.instance.currentUser != null) {
     var currentUser = FirebaseAuth.instance.currentUser;
 
     runApp(MyApp1(currentUser!.uid.toString()));

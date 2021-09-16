@@ -3,7 +3,6 @@ import 'package:notes_app/auth.dart';
 import 'package:notes_app/homepage.dart';
 import 'package:notes_app/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
