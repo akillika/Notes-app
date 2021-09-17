@@ -1,7 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:notes_app/homepage.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class AddNote extends StatefulWidget {
   const AddNote({Key? key, required this.userID}) : super(key: key);
@@ -16,34 +22,79 @@ class _AddNoteState extends State<AddNote> {
   final titleController = TextEditingController();
   final descController = TextEditingController();
   DateTime selectedDate = DateTime.now();
-  String? _selectedTime;
+  late FlutterLocalNotificationsPlugin fltrNotification;
+  late int notificationID;
+  // String? _selectedTime;
+  late int id = 0;
   var now = DateTime.now();
 
-  Future<void> _showTimePicker() async {
-    final TimeOfDay? result =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
-    if (result != null) {
-      setState(() {
-        _selectedTime = result.format(context);
-      });
-    }
+  incrementNotificiationID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    notificationID = (prefs.getInt('counter') ?? 0) + 1;
+    print('set $notificationID times.');
+    await prefs.setInt('counter', notificationID);
+    setState(() {
+      id = notificationID;
+      print(id);
+    });
+    return id;
   }
+
+  Future _showNotification(DateTime date, int id) async {
+    var androidDetails = new AndroidNotificationDetails(
+        "Chanel ID", "Akil", "Hi I am Akil",
+        importance: Importance.max);
+    var iOSDetails = new IOSNotificationDetails();
+    // var generalNotificationDetails =
+    //     new NotificationDetails(android: androidDetails, iOS: iOSDetails);
+
+    // await fltrNotification.show(
+    //     0, 'Hi', "this is a notification", generalNotificationDetails);
+
+    var time = tz.TZDateTime.from(
+      date,
+      tz.local,
+    );
+    print("$id this is the ID for notification");
+
+    fltrNotification.zonedSchedule(
+        id,
+        'scheduled title',
+        'scheduled body',
+        time,
+        const NotificationDetails(
+            android: AndroidNotificationDetails('your channel id',
+                'your channel name', 'your channel description')),
+        androidAllowWhileIdle: true,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime);
+  }
+
+  // Future<void> _showTimePicker() async {
+  //   final TimeOfDay? result =
+  //       await showTimePicker(context: context, initialTime: TimeOfDay.now());
+  //   if (result != null) {
+  //     setState(() {
+  //       _selectedTime = result.format(context);
+  //     });
+  //   }
+  // }
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   CollectionReference users = FirebaseFirestore.instance.collection('users');
 
-  _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate, // Refer step 1
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null && picked != selectedDate)
-      setState(() {
-        selectedDate = picked;
-      });
-  }
+  // _selectDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: selectedDate, // Refer step 1
+  //     firstDate: DateTime(2000),
+  //     lastDate: DateTime(2025),
+  //   );
+  //   if (picked != null && picked != selectedDate)
+  //     setState(() {
+  //       selectedDate = picked;
+  //     });
+  // }
 
   Future<void> addUser(String title, String desc, String date) {
     print(widget.userID);
@@ -54,6 +105,30 @@ class _AddNoteState extends State<AddNote> {
         .add({'title': title, 'description': desc, 'datetime': date})
         .then((value) => print("Note Added"))
         .catchError((error) => print("Failed to add note: $error"));
+  }
+
+  // showTimeZone() async {
+  //   final String currentTimeZone =
+  //       await FlutterNativeTimezone.getLocalTimezone();
+  //   print(currentTimeZone);
+  // }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation("Asia/Kolkata"));
+
+    var androidInitilize =
+        new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var iOSinitilize = new IOSInitializationSettings();
+    final InitializationSettings initilizationsSettings =
+        InitializationSettings(android: androidInitilize, iOS: iOSinitilize);
+
+    fltrNotification = new FlutterLocalNotificationsPlugin();
+    fltrNotification.initialize(initilizationsSettings,
+        onSelectNotification: notificationSelected);
   }
 
   @override
@@ -147,7 +222,9 @@ class _AddNoteState extends State<AddNote> {
                 height: 20,
               ),
               GestureDetector(
-                onTap: () {
+                onTap: () async {
+                  await incrementNotificiationID();
+                  _showNotification(selectedDate, notificationID);
                   if (selectedDate.compareTo(now) < 0) {
                     final snackBar = SnackBar(
                       content: const Text('Date is chosen in past!'),
@@ -193,4 +270,6 @@ class _AddNoteState extends State<AddNote> {
       ),
     );
   }
+
+  Future notificationSelected(String? payload) async {}
 }

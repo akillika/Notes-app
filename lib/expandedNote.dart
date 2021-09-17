@@ -28,7 +28,7 @@ class ExpandedNote extends StatefulWidget {
 class _ExpandedNoteState extends State<ExpandedNote> {
   CollectionReference users = FirebaseFirestore.instance.collection('users');
 
-  String? _selectedTime;
+  // String? _selectedTime;
   late DateTime dt;
   // late TimeOfDay _savedTime;
   late DateTime selectedDate;
