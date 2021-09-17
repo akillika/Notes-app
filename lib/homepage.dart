@@ -132,7 +132,7 @@ class _HomePageState extends State<HomePage> {
               children: snapshot.data!.docs.map((DocumentSnapshot document) {
                 Map<String, dynamic> data =
                     document.data()! as Map<String, dynamic>;
-                formattedDate = data['date'].substring(0, 10);
+                formattedDate = data['datetime'].substring(0, 16) + " IST";
                 return GestureDetector(
                   onTap: () {
                     print(document.id);
@@ -140,8 +140,8 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => ExpandedNote(
-                                date: data['date'].toString(),
-                                time: data['time'].toString(),
+                                date: data['datetime'].toString(),
+                                // time: data['time'].toString(),
                                 docID: document.id,
                                 userID: widget.userID,
                                 title: data['title'].toString(),
@@ -171,13 +171,16 @@ class _HomePageState extends State<HomePage> {
                                       formattedDate,
                                       style: TextStyle(fontSize: 15),
                                     ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text(
-                                      data['time'],
-                                      style: TextStyle(fontSize: 15),
-                                    ),
+                                    // SizedBox(
+                                    //   width: 10,
+                                    // ),
+                                    // Text(
+                                    //   data['datetime']
+                                    //           .toString()
+                                    //           .substring(0, 16) +
+                                    //       " IST",
+                                    //   style: TextStyle(fontSize: 15),
+                                    // ),
                                   ],
                                 ),
                               ],

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/homepage.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 class AddNote extends StatefulWidget {
   const AddNote({Key? key, required this.userID}) : super(key: key);
@@ -44,13 +45,13 @@ class _AddNoteState extends State<AddNote> {
       });
   }
 
-  Future<void> addUser(String title, String desc, String date, String? time) {
+  Future<void> addUser(String title, String desc, String date) {
     print(widget.userID);
     // Call the user's CollectionReference to add a new user
     return users
         .doc(widget.userID)
         .collection(widget.userID)
-        .add({'title': title, 'description': desc, 'time': time, 'date': date})
+        .add({'title': title, 'description': desc, 'datetime': date})
         .then((value) => print("Note Added"))
         .catchError((error) => print("Failed to add note: $error"));
   }
@@ -71,7 +72,7 @@ class _AddNoteState extends State<AddNote> {
         child: Padding(
           padding: const EdgeInsets.all(25.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Card(
                   color: Colors.white,
@@ -100,44 +101,47 @@ class _AddNoteState extends State<AddNote> {
               SizedBox(
                 height: 20,
               ),
-              Row(
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        _selectDate(context);
-                      },
-                      child: Text(
-                        "Choose a date: ",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      )),
-                  Text(
-                    "${selectedDate.toLocal()}".split(' ')[0],
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     TextButton(
+              //         onPressed: () {
+              //           _selectDate(context);
+              //         },
+              //         child: Text(
+              //           "Choose a date: ",
+              //           style: TextStyle(
+              //               fontSize: 20, fontWeight: FontWeight.bold),
+              //         )),
+              //     Text(
+              //       "${selectedDate.toLocal()}".split(' ')[0],
+              //       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              //     ),
+              //   ],
+              // ),
               // SizedBox(
               //   height: 10,
               // ),
-              Row(
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        _showTimePicker();
-                      },
-                      child: Text(
-                        "Choose a time: ",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      )),
-                  Text(
-                    _selectedTime != null
-                        ? _selectedTime!
-                        : 'No time selected!',
+              TextButton(
+                  onPressed: () {
+                    // _showTimePicker();
+                    DatePicker.showDateTimePicker(context,
+                        showTitleActions: true, onChanged: (date) {
+                      print('change $date in time zone ' +
+                          date.timeZoneOffset.inHours.toString());
+                    }, onConfirm: (date) {
+                      print('confirm $date');
+                      setState(() {
+                        selectedDate = date;
+                      });
+                    }, currentTime: DateTime.now());
+                  },
+                  child: Text(
+                    "Select a Date and time",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
+                  )),
+              Text(
+                selectedDate.toString().substring(0, 16) + " IST",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(
                 height: 20,
@@ -149,15 +153,9 @@ class _AddNoteState extends State<AddNote> {
                       content: const Text('Date is chosen in past!'),
                     );
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  }
-                  if (_selectedTime == null) {
-                    final snackBar = SnackBar(
-                      content: const Text('Choose a time!'),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   } else {
                     addUser(titleController.text, descController.text,
-                        selectedDate.toLocal().toString(), _selectedTime);
+                        selectedDate.toString());
                     final snackBar =
                         SnackBar(content: Text("Note added sucessfully"));
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);

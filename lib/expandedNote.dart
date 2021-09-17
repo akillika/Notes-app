@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/homepage.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 class ExpandedNote extends StatefulWidget {
   const ExpandedNote(
@@ -9,7 +10,7 @@ class ExpandedNote extends StatefulWidget {
       required this.desc,
       required this.userID,
       required this.docID,
-      required this.time,
+      // required this.time,
       required this.date})
       : super(key: key);
 
@@ -17,7 +18,7 @@ class ExpandedNote extends StatefulWidget {
   final String desc;
   final String userID;
   final String docID;
-  final String time;
+  // final String time;
   final String date;
 
   @override
@@ -29,33 +30,34 @@ class _ExpandedNoteState extends State<ExpandedNote> {
 
   String? _selectedTime;
   late DateTime dt;
-  late TimeOfDay _savedTime;
+  // late TimeOfDay _savedTime;
+  late DateTime selectedDate;
 
-  Future<void> _showTimePicker() async {
-    final TimeOfDay? result =
-        await showTimePicker(context: context, initialTime: _savedTime);
-    if (result != null) {
-      setState(() {
-        _savedTime = result;
-      });
-    }
-  }
+  // Future<void> _showTimePicker() async {
+  //   final TimeOfDay? result =
+  //       await showTimePicker(context: context, initialTime: _savedTime);
+  //   if (result != null) {
+  //     setState(() {
+  //       _savedTime = result;
+  //     });
+  //   }
+  // }
 
-  _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: dt, // Refer step 1
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null && picked != dt)
-      setState(() {
-        dt = picked;
-      });
-  }
+  // _selectDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: dt, // Refer step 1
+  //     firstDate: DateTime(2020),
+  //     lastDate: DateTime(2025),
+  //   );
+  //   if (picked != null && picked != dt)
+  //     setState(() {
+  //       dt = picked;
+  //     });
+  // }
 
-  Future<void> updateUser(String title, String description, String docID,
-      String time, String date) {
+  Future<void> updateUser(
+      String title, String description, String docID, String date) {
     return users
         .doc(widget.userID)
         .collection(widget.userID)
@@ -64,8 +66,8 @@ class _ExpandedNoteState extends State<ExpandedNote> {
           {
             'title': title,
             'description': description,
-            'date': date,
-            'time': time
+            'datetime': date,
+            // 'time': time
           },
         )
         .then((value) => print("Note Updated"))
@@ -89,10 +91,11 @@ class _ExpandedNoteState extends State<ExpandedNote> {
   void initState() {
     super.initState();
     // docID = widget.docID;
-    _savedTime = TimeOfDay(
-        hour: int.parse(widget.time.split(":")[0]),
-        minute: int.parse(widget.time.split(":")[1].split(" ")[0]));
-    dt = DateTime.parse(widget.date);
+    // _savedTime = TimeOfDay(
+    //     hour: int.parse(widget.time.split(":")[0]),
+    //     minute: int.parse(widget.time.split(":")[1].split(" ")[0]));
+    // dt = DateTime.parse(widget.date);
+    selectedDate = DateTime.parse(widget.date);
     titleController.text = widget.title;
     descController.text = widget.desc;
   }
@@ -109,7 +112,7 @@ class _ExpandedNoteState extends State<ExpandedNote> {
         child: Padding(
           padding: const EdgeInsets.all(25.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Card(
                   color: Colors.white,
@@ -138,54 +141,55 @@ class _ExpandedNoteState extends State<ExpandedNote> {
               SizedBox(
                 height: 20,
               ),
-              Row(
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        _selectDate(context);
-                      },
-                      child: Text(
-                        "Choose a date: ",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      )),
-                  Text(
-                    "${dt.toLocal()}".split(' ')[0],
+              TextButton(
+                  onPressed: () {
+                    // _selectDate(context);
+                    DatePicker.showDateTimePicker(context,
+                        showTitleActions: true, onChanged: (date) {
+                      print('change $date in time zone ' +
+                          date.timeZoneOffset.inHours.toString());
+                    }, onConfirm: (date) {
+                      print('confirm $date');
+                      setState(() {
+                        selectedDate = date;
+                      });
+                    }, currentTime: DateTime.now());
+                  },
+                  child: Text(
+                    "Choose a date: ",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
+                  )),
+              Text(
+                selectedDate.toString().substring(0, 16) + " IST",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               // SizedBox(
               //   height: 10,
               // ),
-              Row(
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        _showTimePicker();
-                      },
-                      child: Text(
-                        "Choose a time: ",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      )),
-                  Text(
-                    _savedTime.format(context),
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     TextButton(
+              //         onPressed: () {
+              //           _showTimePicker();
+              //         },
+              //         child: Text(
+              //           "Choose a time: ",
+              //           style: TextStyle(
+              //               fontSize: 20, fontWeight: FontWeight.bold),
+              //         )),
+              //     Text(
+              //       _savedTime.format(context),
+              //       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              //     ),
+              //   ],
+              // ),
               SizedBox(
-                height: 10,
+                height: 30,
               ),
               GestureDetector(
                 onTap: () {
-                  updateUser(
-                      titleController.text,
-                      descController.text,
-                      widget.docID,
-                      _savedTime.format(context).toString(),
-                      dt.toString());
+                  updateUser(titleController.text, descController.text,
+                      widget.docID, selectedDate.toString());
                   Navigator.pushAndRemoveUntil<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
